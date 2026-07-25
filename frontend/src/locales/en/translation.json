@@ -1,0 +1,165 @@
+{
+  "navbar": {
+    "home": "Home",
+    "howItWorks": "How It Works",
+    "ngos": "NGOs",
+    "startFundraiser": "Start Fundraiser",
+    "donate": "Donate",
+    "login": "Log in",
+    "profile": {
+      "dashboard": "Dashboard",
+      "myCampaigns": "My Campaigns",
+      "donations": "Donations",
+      "saved": "Saved",
+      "settings": "Settings",
+      "logout": "Log Out"
+    }
+  },
+  "landing": {
+    "hero": {
+      "trustBadge": "India's Most Trusted Crowdfunding Platform",
+      "title1": "Fund Change.",
+      "title2": "Empower Lives.",
+      "title3": "Build Communities.",
+      "subtitle": "Support verified campaigns for medical emergencies, education, NGOs, and social causes — with 0% platform fee and complete transparency.",
+      "startCampaign": "Start Your Campaign",
+      "explore": "Explore Causes",
+      "trust": {
+        "secure": "Bank-grade secure",
+        "fee": "0% platform fee",
+        "verification": "3-step verification"
+      },
+      "stats": {
+        "raised": "Raised",
+        "donors": "Donors"
+      },
+      "livePill": "Fundraiser funded just now"
+    },
+    "featured": {
+      "label": "Urgent Causes",
+      "title": "Featured Campaigns",
+      "viewAll": "View all campaigns"
+    },
+    "howItWorks": {
+      "label": "Simple Process",
+      "title": "How CrowdFund works",
+      "subtitle": "Three simple steps to start making a real difference today.",
+      "steps": {
+        "1": {
+          "title": "Create Your Campaign",
+          "desc": "Sign up, tell your story, upload photos, and set your funding goal in under 5 minutes."
+        },
+        "2": {
+          "title": "Share with the World",
+          "desc": "Share your unique campaign link on WhatsApp, Instagram, and email to build momentum fast."
+        },
+        "3": {
+          "title": "Receive Funds",
+          "desc": "Funds withdraw directly to your verified bank account — securely, transparently, on-demand."
+        }
+      }
+    },
+    "impact": {
+      "label": "Platform Impact",
+      "title": "Numbers that speak for themselves",
+      "stats": {
+        "raised": "Total Raised",
+        "campaigns": "Campaigns",
+        "donors": "Donors",
+        "ngos": "Verified NGOs"
+      }
+    },
+    "stories": {
+      "label": "Real Impact",
+      "title": "Stories that changed lives",
+      "fullyFunded": "Fully Funded",
+      "raisedInDays": "Raised <1>{{amount}}</1> in just {{days}} days"
+    },
+    "ngos": {
+      "label": "Verified Partners",
+      "title": "Top NGOs near you",
+      "subtitle": "Discover verified NGOs by state, city, category, and cause. Support, volunteer, or collaborate with organisations already creating local impact.",
+      "exploreAll": "Explore All NGOs",
+      "raised": "Raised",
+      "trust": "Trust",
+      "points": {
+        "1": {
+          "title": "Verified Campaigns",
+          "desc": "Identity, document, and purpose checks before campaigns go live."
+        },
+        "2": {
+          "title": "Transparent Updates",
+          "desc": "Donors see stories, documents, updates, and live donation activity in real time."
+        },
+        "3": {
+          "title": "Nationwide NGO Network",
+          "desc": "Partner with verified NGOs. Discover local organizations by city and cause."
+        }
+      }
+    },
+    "testimonials": {
+      "label": "Community Voice",
+      "title": "Trusted by thousands"
+    },
+    "faqs": {
+      "label": "Got Questions?",
+      "title": "Frequently asked questions"
+    },
+    "about": {
+      "label": "Our Mission",
+      "title": "Building a kinder world",
+      "subtitle": "CrowdFund was born from a simple belief: everyone deserves a fair chance. We democratise giving with a transparent, 0% fee platform where genuine causes meet generous hearts — across every corner of India.",
+      "stats": {
+        "fee": "Platform Fee",
+        "support": "Live Support",
+        "secure": "Bank-Secure"
+      }
+    },
+    "contact": {
+      "label": "Get in touch",
+      "title": "We're here to help you",
+      "subtitle": "Whether you need help starting a campaign or have questions about a donation, our team is always ready.",
+      "email": "Email",
+      "phone": "Phone",
+      "office": "Office",
+      "form": {
+        "title": "Send a message",
+        "name": "Your Name",
+        "email": "Email Address",
+        "subject": "Subject",
+        "message": "How can we help you?",
+        "submit": "Send Message"
+      }
+    }
+  },
+  "footer": {
+    "tagline": "Kindness Creates Change",
+    "desc": "A trust-first crowdfunding ecosystem for verified campaigns, NGO partnerships, and transparent community impact across India.",
+    "groups": {
+      "company": "Company",
+      "resources": "Resources",
+      "ngo": "NGO",
+      "legal": "Legal"
+    },
+    "links": {
+      "about": "About",
+      "careers": "Careers",
+      "press": "Press",
+      "contact": "Contact",
+      "blog": "Blog",
+      "faqs": "FAQs",
+      "successStories": "Success Stories",
+      "impact": "Impact",
+      "becomePartner": "Become Partner",
+      "verification": "Verification",
+      "guidelines": "Guidelines",
+      "findNgos": "Find NGOs",
+      "privacy": "Privacy Policy",
+      "terms": "Terms",
+      "refund": "Refund Policy"
+    },
+    "rights": "© 2026 CrowdFund. All rights reserved.",
+    "madeWith": "Made with",
+    "forChangemakers": "for changemakers in India"
+  }
+}
