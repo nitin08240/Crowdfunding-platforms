@@ -5,11 +5,12 @@ import { Shield, Lock, Mail, KeyRound, Loader2, ArrowLeft, AlertCircle } from 'l
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { useAdmin } from '../context/AdminContext';
+// import { useAdmin } from '../context/AdminContext';
+// const { refreshAdmin } = useAdmin();
 
 const AdminAuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { refreshAdmin } = useAdmin();
+  // const { refreshAdmin } = useAdmin();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
