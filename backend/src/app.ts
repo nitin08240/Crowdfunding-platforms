@@ -81,10 +81,19 @@ const app = express();
 
 // Security
 app.use(helmet());
+// app.use(cors({
+//   origin: env.CLIENT_URL,
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+// }));
+
 app.use(cors({
-  origin: env.CLIENT_URL,
+  origin: [
+    "http://localhost:5173",
+    "https://crowdfunding-platforms.vercel.app",
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }));
 
 // Body parsing
