@@ -28,17 +28,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Admin route uses cookie-based authentication via AdminContext
+// Admin route uses Bearer token from localStorage (cross-domain compatible)
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdminAuthenticated, isAdminLoading } = useAdmin();
 
-  if (isAdminLoading) return (
+  // Quick check: if token exists in localStorage, allow render while async fetch completes
+  const hasStoredToken = !!localStorage.getItem('adminToken');
+
+  if (isAdminLoading && !hasStoredToken) return (
     <div className="min-h-screen pt-24 flex justify-center items-start">
       <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
-  if (!isAdminAuthenticated) return <Navigate to="/admin/login" replace />;
+  if (!isAdminAuthenticated && !hasStoredToken) return <Navigate to="/admin/login" replace />;
   return <>{children}</>;
 };
 

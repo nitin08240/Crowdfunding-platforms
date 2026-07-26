@@ -28,18 +28,47 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchAdminProfile = useCallback(async () => {
     try {
-      const { data } = await api.get('/admin-auth/me');
+      // Use Bearer token from localStorage (works cross-domain, unlike cookies)
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        setAdmin(null);
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('adminProfile');
+        return;
+      }
+
+      const { data } = await api.get('/admin-auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (data.success && data.data?.admin) {
         setAdmin(data.data.admin);
-        // Keep localStorage flag as secondary indicator for quick checks
         localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('adminProfile', JSON.stringify(data.data.admin));
       } else {
         setAdmin(null);
         localStorage.removeItem('isAdmin');
+        localStorage.removeItem('adminProfile');
+        localStorage.removeItem('adminToken');
       }
     } catch {
-      setAdmin(null);
-      localStorage.removeItem('isAdmin');
+      // If /me fails, try using cached profile from localStorage
+      const cached = localStorage.getItem('adminProfile');
+      const token = localStorage.getItem('adminToken');
+      if (cached && token) {
+        try {
+          setAdmin(JSON.parse(cached));
+        } catch {
+          setAdmin(null);
+          localStorage.removeItem('isAdmin');
+          localStorage.removeItem('adminProfile');
+          localStorage.removeItem('adminToken');
+        }
+      } else {
+        setAdmin(null);
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('adminProfile');
+        localStorage.removeItem('adminToken');
+      }
     }
   }, []);
 
@@ -54,12 +83,17 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const adminLogout = async () => {
     try {
-      await api.post('/admin-auth/logout');
+      const token = localStorage.getItem('adminToken');
+      await api.post('/admin-auth/logout', {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
     } catch {
       // Ignore errors — still clear local state
     }
     setAdmin(null);
     localStorage.removeItem('isAdmin');
+    localStorage.removeItem('adminProfile');
+    localStorage.removeItem('adminToken');
   };
 
   const refreshAdmin = async () => {

@@ -22,11 +22,27 @@ const AdminAuthPage: React.FC = () => {
 
   const loginMutation = useMutation({
     mutationFn: (data: typeof formData) => api.post('/admin-auth/login', data).then(r => r.data),
-    onSuccess: async () => {
+    onSuccess: async (responseData: any) => {
       setErrorDetail(null);
-      await refreshAdmin();
+
+      // Store token in localStorage for cross-domain (Vercel + Render) auth
+      // Cookies are blocked cross-site; Bearer token is the fallback
+      const token = responseData?.data?.token;
+      if (token) {
+        localStorage.setItem('adminToken', token);
+      }
+
+      // Store admin profile directly from login response
+      const adminProfile = responseData?.data?.admin;
+      if (adminProfile) {
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
+      }
+
       toast.success('Admin access granted');
-      navigate('/admin');
+
+      // Navigate immediately — don't wait for refreshAdmin (cookie blocked cross-site)
+      navigate('/admin', { replace: true });
     },
     onError: (err: any) => {
       const msg = err.response?.data?.message || err.message || 'Authentication failed';
