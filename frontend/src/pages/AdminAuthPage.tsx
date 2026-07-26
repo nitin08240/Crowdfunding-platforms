@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { Shield, Lock, Mail, KeyRound, Loader2, ArrowLeft } from 'lucide-react';
+import { Shield, Lock, Mail, KeyRound, Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -15,30 +15,38 @@ const AdminAuthPage: React.FC = () => {
     password: '',
     secretKey: '',
   });
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
+
+  // Show which API URL is being used (helps debug production issues)
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1 (default)';
 
   const loginMutation = useMutation({
     mutationFn: (data: typeof formData) => api.post('/admin-auth/login', data).then(r => r.data),
     onSuccess: async () => {
-      // Refresh admin context so the cookie is validated and admin profile is loaded
+      setErrorDetail(null);
       await refreshAdmin();
       toast.success('Admin access granted');
       navigate('/admin');
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Authentication failed');
+      const msg = err.response?.data?.message || err.message || 'Authentication failed';
+      const status = err.response?.status;
+      setErrorDetail(`Status: ${status ?? 'Network Error'} — ${msg}`);
+      toast.error(msg);
     }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorDetail(null);
     loginMutation.mutate(formData);
   };
 
   return (
     <div className="min-h-screen pt-24 pb-20 flex items-center justify-center relative overflow-hidden">
-      {/* Background elements */}
+      {/* Background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-500/10 rounded-full blur-[120px] pointer-events-none" />
-      
+
       <div className="container-app relative z-10 w-full max-w-md">
         <div className="mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors">
@@ -48,7 +56,7 @@ const AdminAuthPage: React.FC = () => {
 
         <div className="glass rounded-3xl p-8 shadow-2xl border-red-500/20 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500" />
-          
+
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4 text-red-500">
               <Shield className="w-8 h-8" />
@@ -57,13 +65,29 @@ const AdminAuthPage: React.FC = () => {
             <p className="text-sm text-gray-400">Secure access requires 3-factor authentication</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Error Detail Block */}
+          {errorDetail && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-red-400 mb-1">Login Failed</p>
+                <p className="text-xs text-red-300">{errorDetail}</p>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Admin Email</label>
+              <label htmlFor="admin-email" className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                Admin Email
+              </label>
               <div className="relative">
                 <Mail className="w-5 h-5 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
+                  id="admin-email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   required
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
@@ -74,11 +98,16 @@ const AdminAuthPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Password</label>
+              <label htmlFor="admin-password" className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="w-5 h-5 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
+                  id="admin-password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   required
                   value={formData.password}
                   onChange={e => setFormData({ ...formData, password: e.target.value })}
@@ -89,11 +118,16 @@ const AdminAuthPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Secret Key</label>
+              <label htmlFor="admin-secret-key" className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                Secret Key
+              </label>
               <div className="relative">
                 <KeyRound className="w-5 h-5 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
+                  id="admin-secret-key"
+                  name="secretKey"
                   type="password"
+                  autoComplete="off"
                   required
                   value={formData.secretKey}
                   onChange={e => setFormData({ ...formData, secretKey: e.target.value })}
@@ -121,6 +155,13 @@ const AdminAuthPage: React.FC = () => {
               </div>
             </button>
           </form>
+
+          {/* API URL Debug Info — visible only in dev or when VITE_API_URL is not set */}
+          {!import.meta.env.VITE_API_URL && (
+            <p className="mt-4 text-center text-[10px] text-yellow-500/60">
+              ⚠️ VITE_API_URL not set — using: {apiUrl}
+            </p>
+          )}
         </div>
       </div>
     </div>
