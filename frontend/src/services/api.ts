@@ -10,10 +10,26 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Attach access token to every request
+// Attach the correct token to every request:
+//   - Admin endpoints (/admin or /admin-auth): use adminToken from localStorage
+//   - User endpoints: use accessToken — but ONLY if no Authorization header already set
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  const url = config.url || '';
+  const alreadyHasAuth = !!config.headers?.Authorization;
+
+  if (url.includes('/admin')) {
+    // For admin routes: always prefer adminToken; never overwrite with user token
+    if (!alreadyHasAuth) {
+      const adminToken = localStorage.getItem('adminToken');
+      if (adminToken) config.headers.Authorization = `Bearer ${adminToken}`;
+    }
+  } else {
+    // For user routes: inject user access token only if not already set
+    if (!alreadyHasAuth) {
+      const userToken = localStorage.getItem('accessToken');
+      if (userToken) config.headers.Authorization = `Bearer ${userToken}`;
+    }
+  }
   return config;
 });
 

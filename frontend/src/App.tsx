@@ -28,20 +28,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Admin route uses Bearer token from localStorage (cross-domain compatible)
+// Admin route: always wait for auth to finish before rendering or redirecting.
+// The previous version had a shortcut: if hasStoredToken, render immediately even
+// while isAdminLoading=true. This caused AdminDashboard to render with admin=null,
+// API calls fired with no auth → 401 → interceptor redirected back to /admin/login
+// → infinite redirect loop.
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdminAuthenticated, isAdminLoading } = useAdmin();
 
-  // Quick check: if token exists in localStorage, allow render while async fetch completes
-  const hasStoredToken = !!localStorage.getItem('adminToken');
-
-  if (isAdminLoading && !hasStoredToken) return (
-    <div className="min-h-screen pt-24 flex justify-center items-start">
+  // Always show spinner while loading — no shortcuts based on localStorage.
+  // setAdminFromLogin() in AdminAuthPage ensures this resolves immediately after login.
+  if (isAdminLoading) return (
+    <div className="min-h-screen flex justify-center items-center">
       <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
-  if (!isAdminAuthenticated && !hasStoredToken) return <Navigate to="/admin/login" replace />;
+  if (!isAdminAuthenticated) return <Navigate to="/admin/login" replace />;
+  return <>{children}</>;
+};
+
+// Redirect already-authenticated admins away from the login page
+const AdminLoginRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAdminAuthenticated, isAdminLoading } = useAdmin();
+  if (isAdminLoading) return (
+    <div className="min-h-screen flex justify-center items-center">
+      <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+  if (isAdminAuthenticated) return <Navigate to="/admin/dashboard" replace />;
   return <>{children}</>;
 };
 
@@ -79,7 +94,11 @@ const App: React.FC = () => {
             </Route>
 
             {/* Admin Pages — completely isolated from Public Layout & Public Navbar */}
-            <Route path="/admin/login" element={<AdminAuthPage />} />
+            <Route path="/admin/login" element={
+              <AdminLoginRoute>
+                <AdminAuthPage />
+              </AdminLoginRoute>
+            } />
             <Route path="/admin/*" element={
               <AdminRoute>
                 <AdminDashboardPage />

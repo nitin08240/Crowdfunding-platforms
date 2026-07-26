@@ -21,7 +21,7 @@ import { useAdmin } from '../context/AdminContext';
 import toast from 'react-hot-toast';
 
 const NAV_ITEMS = [
-  { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/admin/campaigns', label: 'Campaigns', icon: FolderHeart, end: false },
   { to: '/admin/users', label: 'Users', icon: Users, end: false },
   { to: '/admin/ngos', label: 'NGOs', icon: Building2, end: false },
@@ -58,7 +58,7 @@ const AdminDashboardPage: React.FC = () => {
   // Build dynamic breadcrumb label from current path
   const getBreadcrumbs = () => {
     const path = location.pathname;
-    if (path === '/admin') return ['Overview'];
+    if (path === '/admin' || path === '/admin/dashboard') return ['Overview'];
     if (path === '/admin/campaigns') return ['Campaigns'];
     if (path.startsWith('/admin/campaigns/')) return ['Campaigns', 'Campaign Details'];
     if (path === '/admin/users') return ['Users'];
@@ -240,7 +240,10 @@ const AdminDashboardPage: React.FC = () => {
         {/* Main Content Area */}
         <main className="flex-1 min-w-0 p-6 lg:p-8 max-w-7xl">
           <Routes>
+            {/* index: matches /admin/ (no sub-segment) */}
             <Route index element={<AdminStats />} />
+            {/* dashboard: matches /admin/dashboard — the login page navigates here */}
+            <Route path="dashboard" element={<AdminStats />} />
             <Route path="campaigns" element={<AdminCampaignsTab />} />
             <Route path="campaigns/:campaignId" element={<AdminCampaignDetailPage />} />
             <Route path="users" element={<AdminUsersTab />} />
@@ -250,7 +253,7 @@ const AdminDashboardPage: React.FC = () => {
             <Route path="reports" element={<AdminReportsTab />} />
             <Route path="audit-logs" element={<AdminAuditLogs />} />
             <Route path="settings" element={<AdminSettingsTab />} />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Routes>
         </main>
       </div>

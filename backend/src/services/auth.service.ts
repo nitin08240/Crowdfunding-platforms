@@ -32,7 +32,11 @@ export const authService = {
       emailVerificationToken: verificationToken,
     });
 
-    await emailService.sendVerificationEmail(email, name, verificationToken);
+    try {
+      await emailService.sendVerificationEmail(email, name, verificationToken);
+    } catch (e) {
+      console.error('Failed to send verification email during registration:', e);
+    }
     const { accessToken, refreshToken } = generateTokens(String(user._id));
     const refreshHash = await bcrypt.hash(refreshToken, 10);
     user.refreshTokenHash = refreshHash;

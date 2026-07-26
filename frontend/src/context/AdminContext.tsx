@@ -5,7 +5,7 @@ export interface AdminProfile {
   _id: string;
   name: string;
   email: string;
-  role: 'admin' | 'superadmin';
+  role: 'admin' | 'superadmin' | 'super_admin';
   profileImage?: string;
   isActive: boolean;
   lastLoginAt?: string;
@@ -18,6 +18,12 @@ interface AdminContextType {
   isAdminLoading: boolean;
   adminLogout: () => Promise<void>;
   refreshAdmin: () => Promise<void>;
+  /**
+   * Call immediately after a successful login to populate admin state
+   * synchronously from the login response — eliminates the race condition
+   * where AdminRoute renders before the async /me fetch completes.
+   */
+  setAdminFromLogin: (profile: AdminProfile, token: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -28,7 +34,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchAdminProfile = useCallback(async () => {
     try {
-      // Use Bearer token from localStorage (works cross-domain, unlike cookies)
+      // Axios request interceptor now attaches adminToken for /admin routes automatically
       const token = localStorage.getItem('adminToken');
       if (!token) {
         setAdmin(null);
@@ -37,9 +43,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const { data } = await api.get('/admin-auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const { data } = await api.get('/admin-auth/me');
       if (data.success && data.data?.admin) {
         setAdmin(data.data.admin);
         localStorage.setItem('isAdmin', 'true');
@@ -51,7 +55,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem('adminToken');
       }
     } catch {
-      // If /me fails, try using cached profile from localStorage
+      // If /me fails, fall back to cached profile in localStorage
       const cached = localStorage.getItem('adminProfile');
       const token = localStorage.getItem('adminToken');
       if (cached && token) {
@@ -83,10 +87,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const adminLogout = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      await api.post('/admin-auth/logout', {}, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
+      // Interceptor will attach adminToken automatically for /admin routes
+      await api.post('/admin-auth/logout', {});
     } catch {
       // Ignore errors — still clear local state
     }
@@ -100,6 +102,18 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     await fetchAdminProfile();
   };
 
+  /**
+   * Synchronously set admin state from the login API response.
+   * Must be called BEFORE navigate() so that isAdminAuthenticated is already
+   * true when AdminRoute evaluates — no race condition window.
+   */
+  const setAdminFromLogin = (profile: AdminProfile, token: string) => {
+    localStorage.setItem('adminToken', token);
+    localStorage.setItem('isAdmin', 'true');
+    localStorage.setItem('adminProfile', JSON.stringify(profile));
+    setAdmin(profile);
+  };
+
   return (
     <AdminContext.Provider
       value={{
@@ -108,6 +122,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         isAdminLoading,
         adminLogout,
         refreshAdmin,
+        setAdminFromLogin,
       }}
     >
       {children}

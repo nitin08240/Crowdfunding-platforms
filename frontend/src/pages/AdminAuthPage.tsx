@@ -5,12 +5,11 @@ import { Shield, Lock, Mail, KeyRound, Loader2, ArrowLeft, AlertCircle } from 'l
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-// import { useAdmin } from '../context/AdminContext';
-// const { refreshAdmin } = useAdmin();
+import { useAdmin } from '../context/AdminContext';
 
 const AdminAuthPage: React.FC = () => {
   const navigate = useNavigate();
-  // const { refreshAdmin } = useAdmin();
+  const { setAdminFromLogin } = useAdmin();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,32 +17,31 @@ const AdminAuthPage: React.FC = () => {
   });
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
-  // Show which API URL is being used (helps debug production issues)
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1 (default)';
-
   const loginMutation = useMutation({
     mutationFn: (data: typeof formData) => api.post('/admin-auth/login', data).then(r => r.data),
-    onSuccess: async (responseData: any) => {
+    onSuccess: (responseData: any) => {
       setErrorDetail(null);
 
-      // Store token in localStorage for cross-domain (Vercel + Render) auth
-      // Cookies are blocked cross-site; Bearer token is the fallback
       const token = responseData?.data?.token;
-      if (token) {
-        localStorage.setItem('adminToken', token);
+      const adminProfile = responseData?.data?.admin;
+
+      if (!token || !adminProfile) {
+        // Server responded 200 but didn't return expected fields
+        setErrorDetail('Unexpected server response — missing token or admin profile.');
+        toast.error('Login failed: invalid server response');
+        return;
       }
 
-      // Store admin profile directly from login response
-      const adminProfile = responseData?.data?.admin;
-      if (adminProfile) {
-        localStorage.setItem('isAdmin', 'true');
-        localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
-      }
+      // Synchronously set the admin state in context BEFORE navigating.
+      // This ensures isAdminAuthenticated=true when AdminRoute evaluates,
+      // eliminating the race condition that caused the redirect loop.
+      setAdminFromLogin(adminProfile, token);
 
       toast.success('Admin access granted');
 
-      // Navigate immediately — don't wait for refreshAdmin (cookie blocked cross-site)
-      navigate('/admin', { replace: true });
+      // Navigate to /admin/dashboard (matches the /admin/* wildcard route in App.tsx)
+      // NOTE: /admin alone does NOT match /admin/* — the trailing path segment is required
+      navigate('/admin/dashboard', { replace: true });
     },
     onError: (err: any) => {
       const msg = err.response?.data?.message || err.message || 'Authentication failed';
@@ -172,13 +170,6 @@ const AdminAuthPage: React.FC = () => {
               </div>
             </button>
           </form>
-
-          {/* API URL Debug Info — visible only in dev or when VITE_API_URL is not set */}
-          {!import.meta.env.VITE_API_URL && (
-            <p className="mt-4 text-center text-[10px] text-yellow-500/60">
-              ⚠️ VITE_API_URL not set — using: {apiUrl}
-            </p>
-          )}
         </div>
       </div>
     </div>

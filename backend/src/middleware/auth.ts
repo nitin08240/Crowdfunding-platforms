@@ -69,7 +69,7 @@ export const authenticateAdmin = async (
       throw createError('No admin token provided', 401);
     }
 
-    const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET, { algorithms: ['HS256'] }) as { id: string, role: string };
+    const decoded = jwt.verify(token, env.JWT_ADMIN_SECRET, { algorithms: ['HS256'] }) as { id: string, role: string };
     
     const validRoles = ['admin', 'super_admin', 'superadmin'];
     if (!validRoles.includes(decoded.role)) {

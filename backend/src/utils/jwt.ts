@@ -7,10 +7,11 @@ export interface AdminTokenPayload {
   role: string;
 }
 
+// Use a dedicated admin secret — isolates admin JWTs from user access tokens
 export const generateAdminToken = (payload: AdminTokenPayload): string => {
-  return jwt.sign(payload, env.JWT_ACCESS_SECRET, { expiresIn: '24h' });
+  return jwt.sign(payload, env.JWT_ADMIN_SECRET, { expiresIn: '24h' });
 };
 
 export const verifyAdminToken = (token: string): AdminTokenPayload => {
-  return jwt.verify(token, env.JWT_ACCESS_SECRET) as AdminTokenPayload;
+  return jwt.verify(token, env.JWT_ADMIN_SECRET) as AdminTokenPayload;
 };

@@ -7,6 +7,8 @@ export const env = {
   MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/crowdfunding',
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || 'fallback_access_secret',
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret',
+  // Separate secret for admin JWT — isolates admin tokens from user tokens
+  JWT_ADMIN_SECRET: process.env.JWT_ADMIN_SECRET || process.env.JWT_ACCESS_SECRET || 'fallback_admin_secret',
   JWT_ACCESS_EXPIRES: process.env.JWT_ACCESS_EXPIRES || '15m',
   JWT_REFRESH_EXPIRES: process.env.JWT_REFRESH_EXPIRES || '7d',
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',

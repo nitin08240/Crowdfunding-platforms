@@ -79,7 +79,9 @@ export const adminAuthController = {
       res.cookie('adminToken', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        // 'strict' blocks cross-port in dev (localhost:5173 → localhost:5000);
+        // use 'lax' in dev so the cookie is sent on top-level navigations
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
       });
 

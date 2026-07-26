@@ -95,11 +95,14 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
 ].filter(Boolean) as string[];
 
-app.use(cors({
+// Shared CORS options — used for both regular requests AND OPTIONS preflight
+const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    
+    // Check if explicitly allowed or matching *.vercel.app domain
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
     return callback(new Error(`CORS blocked: ${origin}`), false);
@@ -107,10 +110,13 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-}));
+  exposedHeaders: ['Set-Cookie', 'Authorization'],
+};
 
-// Pre-flight
-app.options('*', cors());
+app.use(cors(corsOptions));
+
+// Pre-flight: MUST use the same options (credentials + allowed origins)
+app.options('*', cors(corsOptions));
 
 // Body parsing
 app.use(express.json({
